@@ -28,6 +28,10 @@
   --atk-ink: #b3203a;
   --hp-ink: #0f7a58;
   --fx-ink: #5b3fc4;
+  --k-r: #d6403a;
+  --k-b: #2f6bdc;
+  --k-g: #1f9d62;
+  --k-y: #d29a00;
   --c-o: #b45309;
   --c-d: #1d5fb8;
   --c-s: #0e7490;
@@ -56,6 +60,10 @@
     --tile-edge: #8a8672;
     --tile-ink: #161a2b;
     --fx: #b9a3ff;
+    --k-r: #ff7a70;
+    --k-b: #7fb0ff;
+    --k-g: #52d99a;
+    --k-y: #ffd04d;
     --c-o: #ffb35c;
     --c-d: #84b4ff;
     --c-s: #4fd8e0;
@@ -82,6 +90,10 @@
   --tile-edge: #8a8672;
   --tile-ink: #161a2b;
   --fx: #b9a3ff;
+  --k-r: #ff7a70;
+  --k-b: #7fb0ff;
+  --k-g: #52d99a;
+  --k-y: #ffd04d;
   --c-o: #ffb35c;
   --c-d: #84b4ff;
   --c-s: #4fd8e0;
@@ -147,6 +159,21 @@ p { margin: 0; }
 .qbar i { position: absolute; inset: 0 auto 0 0; background: var(--you-tint); transition: width 0.25s; }
 .qbar .qc { position: relative; display: block; text-align: center; font: 700 11px/18px var(--font-body); letter-spacing: 0.04em; color: var(--muted); }
 .btn.bk { padding: 0 12px; display: grid; place-items: center; }
+.k-r { --kc: var(--k-r); } .k-b { --kc: var(--k-b); } .k-g { --kc: var(--k-g); } .k-y { --kc: var(--k-y); }
+.tile[class*="k-"] { background: color-mix(in srgb, var(--kc) 24%, var(--tile-face)); }
+.tile[class*="k-"]::before, .sw::before { content: ""; position: absolute; top: 6px; left: 6px; width: 9px; height: 9px; background: var(--kc); }
+.k-r::before, .k-r.sw::before { border-radius: 50%; }
+.k-g::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.k-y::before { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.dt[class*="k-"] { position: relative; background: color-mix(in srgb, var(--kc) 35%, var(--tile-face)); color: var(--tile-ink); box-shadow: 0 3px 0 var(--kc); }
+.sw { position: relative; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; background: var(--kc); }
+.sw::before { display: none; }
+.k-r.sw { border-radius: 50%; } .k-g.sw { clip-path: polygon(50% 0, 100% 100%, 0 100%); } .k-y.sw { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.fx.c-r { color: var(--k-r); } .fx.c-b { color: var(--k-b); } .fx.c-g { color: var(--k-g); } .fx.c-y { color: var(--k-y); } .fx.c-f { color: var(--ink); }
+.fx[class*="c-"] { border-color: currentColor; }
+.sbs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sb { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: 13px; }
+.sb b.atk { color: var(--bad); } .sb b.hp { color: var(--good); }
 .tile { transition: transform 0.06s, box-shadow 0.06s, opacity 0.15s; }
 .tile:not(.used):active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tile-edge), 0 2px 4px var(--shadow); }
 .tile.used { opacity: 0.3; transform: translateY(4px); box-shadow: none; cursor: default; }
@@ -292,13 +319,35 @@ const DIST = { E: 12, A: 9, I: 9, O: 8, N: 6, R: 6, T: 6, L: 4, S: 4, U: 4, D: 4
 const BAG = Object.entries(DIST).flatMap(([c, n]) => Array(n).fill(c));
 const POOL_SIZE = 24, RACK = 12, BASE_HP = 50, MAX_ROUNDS = 7;
 
-/* Letter effects. Every copy of a letter in a word adds to its unit. */
-const FX = {
-  P: { k: 'pierce', n: 'Pierce', d: 'Each hit deals 1 extra damage on every hit.' },
-  C: { k: 'cleave', n: 'Cleave', d: 'Damage left over after a kill hits the next enemy.' },
+/* Every letter has a color. Three or more of one color in a word power the unit up. */
+const COLORS = {
+  r: { n: 'Red', letters: 'ENDBMK', d: '+1 ATK per tier' },
+  b: { n: 'Blue', letters: 'ARLGCYJ', d: '+2 HP per tier' },
+  g: { n: 'Green', letters: 'ITSHPWX', d: '+1 HP per tier, +1 ATK every second tier' },
+  y: { n: 'Gold', letters: 'OUFVQZ', d: '+1 ATK and +1 HP per tier' },
 };
-/* Hard letters give a flat stat bonus instead. */
-const STAT = { J: { atk: 3 }, X: { atk: 3 }, Q: { hp: 6 }, Z: { hp: 6 }, K: { atk: 1 }, Y: { atk: 1 }, V: { hp: 2 } };
+const COLOR = {};
+for (const [k, c] of Object.entries(COLORS)) for (const ch of c.letters) COLOR[ch] = k;
+const FX = {};
+/* Hard letters give a flat stat bonus on top. */
+const STAT = { J: { atk: 3 }, X: { atk: 3 }, Q: { hp: 6 }, Z: { hp: 6 }, K: { atk: 2 }, W: { hp: 2 }, Y: { atk: 1 }, V: { hp: 2 }, F: { atk: 1 }, B: { hp: 1 }, H: { hp: 1 } };
+function colorBonus(w) {
+  const cnt = { r: 0, b: 0, g: 0, y: 0 };
+  for (const c of w) cnt[COLOR[c]]++;
+  const list = []; let atk = 0, hp = 0;
+  for (const k of Object.keys(cnt)) {
+    const c = cnt[k];
+    if (c < 3) continue;
+    const t = Math.min(c - 2, 3);
+    const b = k === 'r' ? { atk: t, hp: 0 } : k === 'b' ? { atk: 0, hp: 2 * t } : k === 'g' ? { atk: Math.ceil(t / 2) - 1 + (t >= 2 ? 1 : 0) - (t >= 2 ? 0 : 0), hp: t } : { atk: t, hp: t };
+    if (k === 'g') b.atk = Math.floor(t / 2);
+    list.push({ k, c, atk: b.atk, hp: b.hp });
+    atk += b.atk; hp += b.hp;
+  }
+  const flush = w.length >= 4 && Object.values(cnt).some(c => c === w.length);
+  if (flush) { atk += 2; hp += 2; }
+  return { list, flush, atk, hp };
+}
 const FXKEYS = ['swift', 'ward', 'armor', 'dread', 'thorns', 'pierce', 'cleave', 'fury', 'leech', 'rage', 'rally'];
 const FXNAME = Object.fromEntries(Object.values(FX).map(f => [f.k, f.n]));
 const FXWEIGHT = { armor: 3, thorns: 3, rally: 3, leech: 3, swift: 5, dread: 4, pierce: 3, cleave: 4, rage: 3, fury: 3, ward: 5 };
@@ -315,20 +364,18 @@ function unitStats(word) {
   for (const c of w) {
     const s = STAT[c];
     if (s) { bAtk += s.atk || 0; bHp += s.hp || 0; }
-    if (FX[c]) fx[FX[c].k]++;
   }
-  fx.dread = Math.min(fx.dread, 3);
-  return { word: w, len: n, atk: atk + bAtk, hp: hp + bHp, cls, bAtk, bHp, fx };
+  const cb = colorBonus(w);
+  bAtk += cb.atk; bHp += cb.hp;
+  return { word: w, len: n, atk: atk + bAtk, hp: hp + bHp, cls, bAtk, bHp, fx, cb };
 }
-const FXCAT = { swift: 'o', pierce: 'o', cleave: 'o', fury: 'o', rage: 'o', armor: 'd', ward: 'd', dread: 'd', thorns: 'd', leech: 's', rally: 's' };
-function fxChips(fx) {
-  return FXKEYS.filter(k => fx[k]).map(k => `<span class="fx c-${FXCAT[k]}">${FXNAME[k]}${fx[k] > 1 ? ' ×' + fx[k] : ''}</span>`).join('');
-}
-function fxTags(fx) {
-  const out = [];
-  for (const k of FXKEYS) { const n = fx[k]; if (n) out.push(FXNAME[k] + (n > 1 ? ' ×' + n : '')); }
+function cbParts(cb) {
+  const out = cb.list.map(x => ({ k: x.k, t: `${COLORS[x.k].n} ×${x.c} ${[x.atk ? '+' + x.atk + ' ATK' : '', x.hp ? '+' + x.hp + ' HP' : ''].filter(Boolean).join(' ')}` }));
+  if (cb.flush) out.push({ k: 'f', t: 'Flush +2 ATK +2 HP' });
   return out;
 }
+function fxChips(u) { return cbParts(u.cb).map(x => `<span class="fx c-${x.k}">${x.t}</span>`).join(''); }
+function fxTags(u) { return cbParts(u.cb).map(x => x.t); }
 function power(w) {
   const u = unitStats(w);
   let p = u.atk * 2 + u.hp;
@@ -585,18 +632,18 @@ function emblem(n) {
 function chartHtml() {
   const rows = [3, 4, 5, 6, 7, 8].map(n => {
     const u = unitStats('a'.repeat(n));
-    const base = unitStats('e'.repeat(n));
+    const base = { atk: ATKT[n], hp: HPT[n] };
     return `<tr><td>${n}</td><td><span class="ucell">${emblem(n)}${u.cls}</span></td><td>${base.atk}</td><td>${base.hp}</td></tr>`;
   }).join('');
   return `<div class="scroll"><table class="chart"><thead><tr><th>Letters</th><th>Unit</th><th>ATK</th><th>HP</th></tr></thead><tbody>${rows}</tbody></table></div>
-  <p class="note">Words past 8 letters keep growing. Letter effects and bonuses come on top of these numbers. Bases start at ${BASE_HP} HP and a game lasts up to ${MAX_ROUNDS} rounds.</p>`;
+  <p class="note">Words past 8 letters keep growing. Color and letter bonuses come on top of these numbers. Bases start at ${BASE_HP} HP and a game lasts up to ${MAX_ROUNDS} rounds.</p>`;
 }
 function guideHtml() {
-  const row = (c, label, cls, desc) => `<tr><td><span class="lg">${c}</span></td><td><span class="bd ${cls}">${label}</span></td><td>${desc}</td></tr>`;
-  const fxRows = Object.entries(FX).map(([c, f]) => row(c, f.n, 'fx c-' + FXCAT[f.k], f.d)).join('');
-  const statRows = Object.entries(STAT).map(([c, s]) => row(c, s.atk ? '+' + s.atk + ' ATK' : '+' + s.hp + ' HP', s.atk ? 'atk' : 'hp', 'Hard letter bonus.')).join('');
-  return `<div class="scroll"><table class="chart"><thead><tr><th>Letter</th><th>Effect</th><th>What it does</th></tr></thead><tbody>${fxRows}${statRows}</tbody></table></div>
-  <p class="note">Letters not listed here have no effect. Repeated letters stack, so two P's give Pierce ×2.</p>`;
+  const crow = ([k, c]) => `<tr><td><span class="sw k-${k}"></span><b>${c.n}</b></td><td>${c.letters.split('').join(' ')}</td><td>${c.d}</td></tr>`;
+  const statRows = Object.entries(STAT).map(([c, v]) => `<span class="sb">${c} <b class="${v.atk ? 'atk' : 'hp'}">${v.atk ? '+' + v.atk + ' ATK' : '+' + v.hp + ' HP'}</b></span>`).join('');
+  return `<div class="scroll"><table class="chart"><thead><tr><th>Color</th><th>Letters</th><th>Bonus</th></tr></thead><tbody>${Object.entries(COLORS).map(crow).join('')}</tbody></table></div>
+  <p class="note">Count the tiles of one color in a word. Three tiles is tier 1, four is tier 2, five or more is tier 3. A word of 4+ letters that is all one color is a Flush and gains +2 ATK and +2 HP. Each color's bonus applies to its own count, so one word can earn several.</p>
+  <p class="note">Hard letters add a flat bonus on top:</p><div class="sbs">${statRows}</div>`;
 }
 
 /* ---- Title ---- */
@@ -623,11 +670,11 @@ function showTitle() {
       <ol>
         <li>You and the opponent get the same ${POOL_SIZE} letters each round. Your rack shows ${RACK}, and the rest queue up to replace letters you spend.</li>
         <li>Once per round you can Swap: put letters in the word box and trade them for new ones. Both players draw swap letters from the same fixed list.</li>
-        <li>Spell words. Each letter is used once, and each word spawns a unit. Some letters give that unit special abilities.</li>
+        <li>Spell words. Each letter is used once, and each word spawns a unit. Tiles come in four colors, and matching colors in a word power the unit up.</li>
         <li>Units fight front to back in the order you spawned them. Survivors hit the base.</li>
       </ol>
       ${chartHtml()}
-      <details class="ref"><summary>Letter effects</summary>${guideHtml()}</details>
+      <details class="ref"><summary>Colors and bonuses</summary>${guideHtml()}</details>
     </section>
   </div>`;
 }
@@ -669,7 +716,7 @@ function tilesHtml() {
   return S.rack.map(id => {
     if (id === null) return '<div class="slot" aria-hidden="true"></div>';
     const t = tileById(id);
-    return `<button class="tile" data-a="tile" data-id="${t.id}" aria-label="Letter ${t.ch}">${t.ch}${bonusBadge(t.ch)}</button>`;
+    return `<button class="tile k-${COLOR[t.ch]}" data-a="tile" data-id="${t.id}" aria-label="Letter ${t.ch}">${t.ch}${bonusBadge(t.ch)}</button>`;
   }).join('');
 }
 
@@ -691,7 +738,7 @@ function showBuild() {
     <p id="foeNote" class="note"></p>
     <button id="go" class="btn go" data-a="battle">Start battle</button>
     <details class="ref"><summary>Unit power chart</summary>${chartHtml()}</details>
-    <details class="ref"><summary>Letter effects</summary>${guideHtml()}</details>
+    <details class="ref"><summary>Colors and bonuses</summary>${guideHtml()}</details>
     <button class="link" data-a="menu">Quit to menu</button>`;
   $('#timer').hidden = !S.endAt;
   updateAll();
@@ -735,7 +782,7 @@ function updateDraft() {
   const d = $('#draft');
   d.className = 'draft' + (w ? ' has' : '');
   d.innerHTML = w
-    ? S.draft.map((id, k) => `<button class="dt" data-a="dtile" data-k="${k}" aria-label="Remove ${tileById(id).ch}">${tileById(id).ch}</button>`).join('')
+    ? S.draft.map((id, k) => `<button class="dt k-${COLOR[tileById(id).ch]}" data-a="dtile" data-k="${k}" aria-label="Remove ${tileById(id).ch}">${tileById(id).ch}</button>`).join('')
     : '<span class="ph">Tap letters or type to spell a word</span>';
   let cls = 'preview', html;
   if (!w) html = 'Each letter can be used once.';
@@ -743,7 +790,7 @@ function updateDraft() {
   else if (!WORDSET.has(w.toLowerCase())) { cls += ' bad'; html = `<b>${w}</b> is not in the word list`; }
   else {
     const u = unitStats(w);
-    const tags = fxTags(u.fx);
+    const tags = fxTags(u);
     cls += ' ok';
     html = `<b>${w}</b> <span>${u.cls} · ATK ${u.atk} · HP ${u.hp}</span>${tags.length ? `<span>${tags.join(' · ')}</span>` : ''}`;
   }
@@ -757,7 +804,7 @@ function updateArmy() {
   const us = S.units;
   const atk = us.reduce((s, u) => s + u.atk, 0), hp = us.reduce((s, u) => s + u.hp, 0);
   const chips = us.map((u, k) => {
-    const tags = fxChips(u.fx);
+    const tags = fxChips(u);
     return `<li class="chip"><span class="ord">${k + 1}</span><span class="cw">${emblem(u.len)}<span>${u.word}</span></span><span class="cs">ATK ${u.atk} · HP ${u.hp}</span><button class="x" data-a="recall" data-id="${u.id}" aria-label="Recall ${u.word}">×</button>${tags ? `<div class="tags">${tags}</div>` : ''}</li>`;
   }).join('');
   $('#army').innerHTML = `<div class="army-h"><b>Your army</b><span>${plural(us.length, 'unit')} · ATK ${atk} · HP ${hp}</span></div>` +
@@ -842,7 +889,7 @@ function tick() {
 const sleep = ms => speed === 0 ? Promise.resolve() : new Promise(r => setTimeout(r, ms / speed));
 
 function cardHtml(u, side, i) {
-  const tags = fxChips(u.fx);
+  const tags = fxChips(u);
   return `<div class="unit" id="c${side}${i}"><div class="w">${emblem(u.len)}<span>${u.word}</span></div><div class="m"><span>${u.cls} · ATK <b class="atkn">${u.atk}</b></span><span>HP <b class="hpn">${u.hp}</b>/${u.hp}</span></div><div class="ub"><i></i></div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>`;
 }
 function setHp(card, cur, max) {
