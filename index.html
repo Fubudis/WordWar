@@ -294,10 +294,8 @@ const POOL_SIZE = 24, RACK = 12, BASE_HP = 50, MAX_ROUNDS = 7;
 
 /* Letter effects. Every copy of a letter in a word adds to its unit. */
 const FX = {
-  D: { k: 'dread', n: 'Dread', d: 'Enemies hit it 25% weaker per D, up to three.' },
-  P: { k: 'pierce', n: 'Pierce', d: 'Each hit deals 1 extra damage that ignores Dread.' },
+  P: { k: 'pierce', n: 'Pierce', d: 'Each hit deals 1 extra damage on every hit.' },
   C: { k: 'cleave', n: 'Cleave', d: 'Damage left over after a kill hits the next enemy.' },
-  W: { k: 'ward', n: 'Ward', d: 'Blocks the first hit it takes.' },
 };
 /* Hard letters give a flat stat bonus instead. */
 const STAT = { J: { atk: 3 }, X: { atk: 3 }, Q: { hp: 6 }, Z: { hp: 6 }, K: { atk: 1 }, Y: { atk: 1 }, V: { hp: 2 } };
@@ -598,7 +596,7 @@ function guideHtml() {
   const fxRows = Object.entries(FX).map(([c, f]) => row(c, f.n, 'fx c-' + FXCAT[f.k], f.d)).join('');
   const statRows = Object.entries(STAT).map(([c, s]) => row(c, s.atk ? '+' + s.atk + ' ATK' : '+' + s.hp + ' HP', s.atk ? 'atk' : 'hp', 'Hard letter bonus.')).join('');
   return `<div class="scroll"><table class="chart"><thead><tr><th>Letter</th><th>Effect</th><th>What it does</th></tr></thead><tbody>${fxRows}${statRows}</tbody></table></div>
-  <p class="note">Letters not listed here have no effect. Repeated letters stack, so two D's give Dread ×2. In a hit, Ward can block it, Dread cuts it down to a minimum of 1, then Pierce adds damage that ignores that.</p>`;
+  <p class="note">Letters not listed here have no effect. Repeated letters stack, so two P's give Pierce ×2.</p>`;
 }
 
 /* ---- Title ---- */
