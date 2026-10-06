@@ -761,7 +761,7 @@ function updatePool() {
   const qb = $('#queueBar');
   if (qb) {
     $('i', qb).style.width = (q / (POOL_SIZE - RACK) * 100) + '%';
-    $('.qc', qb).textContent = q ? `${q} in queue` : 'Queue empty';
+    $('.qc', qb).textContent = q ? `${q} tiles left` : 'No tiles left';
     qb.setAttribute('aria-label', `${plural(q, 'letter')} waiting in the queue. Spent letters are replaced from it.`);
   }
   const sw = $('#swap');
