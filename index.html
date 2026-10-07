@@ -286,6 +286,60 @@ fieldset.opt legend { padding: 0; margin-bottom: 8px; font: 700 12px/1 var(--fon
 .bd.atk { color: var(--bad); }
 .bd.hp { color: var(--good); }
 
+/* ---- Motion and polish ---- */
+@keyframes pop { 0% { transform: scale(0.3) translateY(10px); opacity: 0; } 65% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes enter { from { opacity: 0; transform: translateX(var(--from, 0)) scale(0.92); } to { opacity: 1; transform: none; } }
+@keyframes slidein { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
+@keyframes spark { from { transform: translate(-50%, -50%) scale(1); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.1); opacity: 0; } }
+@keyframes slash { 0% { opacity: 0; transform: translateX(-120%) skewX(-20deg); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateX(160%) skewX(-20deg); } }
+@keyframes fall { 0% { transform: scale(1.08); filter: brightness(2.2); } 35% { transform: scale(1.02) rotate(-2deg); filter: brightness(1.4); } 100% { } }
+@keyframes shake { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-5px, 2px); } 40% { transform: translate(5px, -2px); } 60% { transform: translate(-3px, 1px); } 80% { transform: translate(3px, 0); } }
+@keyframes hurt { 0%, 100% { transform: none; } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }
+@keyframes sheen { from { background-position: 150% 0; } to { background-position: -50% 0; } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 2px var(--k-y), 0 0 8px color-mix(in srgb, var(--k-y) 55%, transparent); } 50% { box-shadow: 0 0 0 2px var(--k-y), 0 0 18px color-mix(in srgb, var(--k-y) 90%, transparent); } }
+@keyframes confall { from { transform: translateY(0) rotate(0); opacity: 1; } to { transform: translateY(var(--h, 260px)) rotate(var(--r, 540deg)); opacity: 0.9; } }
+@keyframes glint { 0%, 100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 1; } }
+.tile.new { animation: pop 0.34s backwards; animation-delay: calc(var(--i, 0) * 28ms); }
+.dt.pop { animation: pop 0.22s; }
+.chip.new { animation: slidein 0.3s; }
+.preview.ok b { animation: pop 0.25s; display: inline-block; }
+.lt { animation: pop 0.5s backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.panel { position: relative; overflow: hidden; animation: enter 0.4s backwards; }
+.unit { animation: enter 0.45s backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+.you .unit { --from: -26px; }
+.foe .unit { --from: 26px; }
+.unit.lunge { transform: translateX(14px) scale(1.05); z-index: 3; transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.35s, border-color 0.15s; }
+.foe .unit.lunge { transform: translateX(-14px) scale(1.05); }
+.unit.strike { transform: translateY(-16px) scale(1.06); }
+.unit.hit { animation: hit 0.3s; }
+.unit.dead { opacity: 0.3; filter: grayscale(0.85); transform: scale(0.96); animation: fall 0.55s; }
+.unit.slashed::after { content: ""; position: absolute; inset: 0; border-radius: 8px; background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.85) 50%, transparent 65%); pointer-events: none; animation: slash 0.32s ease-out forwards; z-index: 2; }
+@keyframes hit { 0%, 100% { translate: 0 0; filter: none; } 20% { translate: -5px 0; filter: brightness(1.7) saturate(1.5); } 60% { translate: 4px 0; } }
+.unit .ub { position: relative; }
+.unit .ub b { position: absolute; inset: 0 auto 0 0; width: 100%; background: var(--bad); opacity: 0.75; transition: width 0.55s ease 0.3s; }
+.unit .ub i { position: relative; z-index: 1; }
+.med { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--you) 55%, #fff), var(--you) 55%, var(--you-edge)); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2), 0 3px 6px var(--shadow); }
+.foe .med { background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--foe) 55%, #fff), var(--foe) 55%, color-mix(in srgb, var(--foe) 60%, #000)); }
+.med .emb { width: 21px; height: 21px; color: var(--you-ink); filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.25)); }
+.foe .med .emb { color: var(--foe-ink); }
+.tier-7 .med, .tier-8 .med { box-shadow: 0 0 0 2px var(--k-y), 0 0 10px color-mix(in srgb, var(--k-y) 60%, transparent); }
+.tier-8 .med { animation: pulse 1.8s infinite; }
+.unit.boost { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--k-y) 70%, transparent); }
+.unit.flush { background-image: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.4) 50%, transparent 70%); background-size: 220% 100%; animation: enter 0.45s backwards, sheen 2.6s linear infinite; animation-delay: calc(var(--i, 0) * 80ms), 0s; }
+.burst { position: absolute; left: 50%; top: 50%; width: 0; height: 0; pointer-events: none; z-index: 4; }
+.burst i { position: absolute; left: 0; top: 0; width: 7px; height: 7px; border-radius: 50%; animation: spark 0.6s ease-out forwards; }
+.burst.sq i { border-radius: 2px; }
+.field { position: relative; padding: 4px 0; background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--you) 8%, transparent), transparent 70%); }
+.field::before { content: ""; position: absolute; left: 50%; top: 22px; bottom: 6px; width: 2px; margin-left: -1px; background: repeating-linear-gradient(to bottom, var(--line) 0 6px, transparent 6px 12px); }
+.field::after { content: "VS"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 3px 7px; border-radius: 8px; background: var(--ink); color: var(--bg); font: 800 12px/1 var(--font-display); letter-spacing: 0.12em; z-index: 1; }
+.field.shake { animation: shake 0.34s; }
+.base.hurt { animation: hurt 0.4s; }
+.base.hurt .num { color: var(--bad); }
+.confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.confetti i { position: absolute; top: -12px; width: 8px; height: 13px; border-radius: 2px; animation: confall var(--d, 1.8s) ease-in forwards; }
+.panel.win h2 { text-shadow: 0 0 22px color-mix(in srgb, var(--good) 55%, transparent); }
+.panel.win h2::before, .panel.win h2::after { content: "✦"; display: inline-block; margin: 0 10px; font-size: 0.5em; vertical-align: middle; color: var(--k-y); animation: glint 1.4s infinite; }
+@media (prefers-reduced-motion: reduce) { .unit.flush { animation: none; } }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
@@ -656,7 +710,7 @@ function showTitle() {
     `<button class="segb" data-a="${key}" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${l}</button>`).join('');
   const played = REC.w + REC.l + REC.d;
   const rec = played ? `<p class="rec">Record ${REC.w}W ${REC.l}L ${REC.d}D${REC.best ? ` · Longest word ${REC.best.toUpperCase()} (${REC.best.length})` : ''}</p>` : '';
-  const logo = 'WORD'.split('').map(c => `<span class="lt">${c}</span>`).join('') + 'WAR'.split('').map(c => `<span class="lt war">${c}</span>`).join('');
+  const logo = 'WORD'.split('').map((c, i) => `<span class="lt" style="--i:${i}">${c}</span>`).join('') + 'WAR'.split('').map((c, i) => `<span class="lt war" style="--i:${i + 4}">${c}</span>`).join('');
   stage.innerHTML = `
   <div class="title">
     <div class="logo" role="img" aria-label="Wordwar">${logo}</div>
@@ -691,6 +745,7 @@ function startRound() {
   S.phase = 'build';
   const p = makePool(S.seed, S.round);
   S.tiles = p.letters.map((ch, id) => ({ id, ch, use: null }));
+  S.fresh = new Set(p.letters.slice(0, RACK).map((_, i) => i));
   S.swapPool = p.swaps;
   S.swapIdx = 0;
   S.rack = S.tiles.slice(0, RACK).map(t => t.id);
@@ -713,11 +768,14 @@ function bonusBadge(ch) {
   return s.atk ? `<span class="b atk">+${s.atk} ATK</span>` : `<span class="b hp">+${s.hp} HP</span>`;
 }
 function tilesHtml() {
-  return S.rack.map(id => {
+  const html = S.rack.map((id, i) => {
     if (id === null) return '<div class="slot" aria-hidden="true"></div>';
     const t = tileById(id);
-    return `<button class="tile k-${COLOR[t.ch]}" data-a="tile" data-id="${t.id}" aria-label="Letter ${t.ch}">${t.ch}${bonusBadge(t.ch)}</button>`;
+    const fresh = S.fresh && S.fresh.has(id) ? ' new' : '';
+    return `<button style="--i:${i}" class="tile k-${COLOR[t.ch]}${fresh}" data-a="tile" data-id="${t.id}" aria-label="Letter ${t.ch}">${t.ch}${bonusBadge(t.ch)}</button>`;
   }).join('');
+  S.fresh = new Set();
+  return html;
 }
 
 function showBuild() {
@@ -725,7 +783,7 @@ function showBuild() {
   stage.innerHTML = `
     <div id="draft" class="draft"></div>
     <div id="preview" class="preview"></div>
-    <div id="pool" class="pool">${tilesHtml()}</div>
+    <div id="pool" class="pool"></div>
     <div id="queueBar" class="qbar" role="img"><i></i><span class="qc"></span></div>
     <div class="controls">
       <button class="btn bk" data-a="undo" aria-label="Backspace" title="Backspace"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12.5 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -782,7 +840,7 @@ function updateDraft() {
   const d = $('#draft');
   d.className = 'draft' + (w ? ' has' : '');
   d.innerHTML = w
-    ? S.draft.map((id, k) => `<button class="dt k-${COLOR[tileById(id).ch]}" data-a="dtile" data-k="${k}" aria-label="Remove ${tileById(id).ch}">${tileById(id).ch}</button>`).join('')
+    ? S.draft.map((id, k) => `<button class="dt${S.popLast && k === S.draft.length - 1 ? ' pop' : ''} k-${COLOR[tileById(id).ch]}" data-a="dtile" data-k="${k}" aria-label="Remove ${tileById(id).ch}">${tileById(id).ch}</button>`).join('')
     : '<span class="ph">Tap letters or type to spell a word</span>';
   let cls = 'preview', html;
   if (!w) html = 'Each letter can be used once.';
@@ -805,10 +863,11 @@ function updateArmy() {
   const atk = us.reduce((s, u) => s + u.atk, 0), hp = us.reduce((s, u) => s + u.hp, 0);
   const chips = us.map((u, k) => {
     const tags = fxChips(u);
-    return `<li class="chip"><span class="ord">${k + 1}</span><span class="cw">${emblem(u.len)}<span>${u.word}</span></span><span class="cs">ATK ${u.atk} · HP ${u.hp}</span><button class="x" data-a="recall" data-id="${u.id}" aria-label="Recall ${u.word}">×</button>${tags ? `<div class="tags">${tags}</div>` : ''}</li>`;
+    return `<li class="chip${u.id === S.justSpawned ? ' new' : ''}"><span class="ord">${k + 1}</span><span class="cw">${emblem(u.len)}<span>${u.word}</span></span><span class="cs">ATK ${u.atk} · HP ${u.hp}</span><button class="x" data-a="recall" data-id="${u.id}" aria-label="Recall ${u.word}">×</button>${tags ? `<div class="tags">${tags}</div>` : ''}</li>`;
   }).join('');
   $('#army').innerHTML = `<div class="army-h"><b>Your army</b><span>${plural(us.length, 'unit')} · ATK ${atk} · HP ${hp}</span></div>` +
     (us.length ? `<ol class="chips">${chips}</ol>` : '<p class="empty">No units yet. Units fight in the order you spawn them, so your first word stands in front.</p>');
+  S.justSpawned = 0;
   $('#go').disabled = us.length === 0;
   $('#foeNote').textContent = `The opponent has locked in ${plural(S.foeUnits.length, 'unit')}.`;
 }
@@ -819,10 +878,12 @@ function addTile(t) {
   if (t.use !== null) return;
   t.use = 'd';
   S.draft.push(t.id);
+  S.popLast = true;
   updatePool();
   updateDraft();
 }
 function removeDraft(k) {
+  S.popLast = false;
   if (k < 0 || k >= S.draft.length) return;
   const id = S.draft.splice(k, 1)[0];
   tileById(id).use = null;
@@ -834,6 +895,7 @@ function spawn() {
   if (w.length < 3 || !WORDSET.has(w.toLowerCase())) return;
   const u = unitStats(w);
   u.id = S.uid++;
+  S.justSpawned = u.id;
   u.tiles = S.draft.slice();
   u.slotOf = {};
   u.tiles.forEach(id => {
@@ -841,6 +903,7 @@ function spawn() {
     const idx = S.rack.indexOf(id);
     u.slotOf[id] = idx;
     S.rack[idx] = S.queue.length ? S.queue.shift() : null;
+    if (S.rack[idx] !== null) S.fresh.add(S.rack[idx]);
   });
   S.units.push(u);
   S.draft = [];
@@ -890,17 +953,52 @@ const sleep = ms => speed === 0 ? Promise.resolve() : new Promise(r => setTimeou
 
 function cardHtml(u, side, i) {
   const tags = fxChips(u);
-  return `<div class="unit" id="c${side}${i}"><div class="w">${emblem(u.len)}<span>${u.word}</span></div><div class="m"><span>${u.cls} · ATK <b class="atkn">${u.atk}</b></span><span>HP <b class="hpn">${u.hp}</b>/${u.hp}</span></div><div class="ub"><i></i></div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>`;
+  const boost = u.cb && (u.cb.list.length || u.cb.flush);
+  return `<div class="unit tier-${Math.min(u.len, 8)}${boost ? ' boost' : ''}${u.cb && u.cb.flush ? ' flush' : ''}" id="c${side}${i}" style="--i:${i}"><div class="w"><span class="med">${emblem(u.len)}</span><span>${u.word}</span></div><div class="m"><span>${u.cls} · ATK <b class="atkn">${u.atk}</b></span><span>HP <b class="hpn">${u.hp}</b>/${u.hp}</span></div><div class="ub"><b></b><i></i></div>${tags ? `<div class="tags">${tags}</div>` : ''}</div>`;
 }
 function setHp(card, cur, max) {
   $('.hpn', card).textContent = cur;
   $('.ub i', card).style.width = (cur / max * 100) + '%';
+  const g = $('.ub b', card);
+  if (g) g.style.width = (cur / max * 100) + '%';
 }
 function syncCard(card, v, u) {
   if (!card) return;
   setHp(card, v.hp, u.hp);
   const an = $('.atkn', card);
   if (an && an.textContent !== String(v.atk)) an.textContent = v.atk;
+}
+function burst(el, color, n = 10, spread = 46, sq = false) {
+  if (!el || speed === 0) return;
+  const box = document.createElement('span');
+  box.className = 'burst' + (sq ? ' sq' : '');
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    const a = Math.random() * Math.PI * 2, d = spread * (0.45 + Math.random() * 0.7);
+    p.style.setProperty('--dx', Math.cos(a) * d + 'px');
+    p.style.setProperty('--dy', Math.sin(a) * d + 'px');
+    p.style.background = color;
+    box.appendChild(p);
+  }
+  el.appendChild(box);
+  setTimeout(() => box.remove(), 700);
+}
+function confetti(el, n) {
+  const box = document.createElement('div');
+  box.className = 'confetti';
+  const cols = ['--k-r', '--k-b', '--k-g', '--k-y', '--you', '--foe'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = `var(${cols[i % cols.length]})`;
+    p.style.setProperty('--d', 1.3 + Math.random() * 1.3 + 's');
+    p.style.setProperty('--h', 200 + Math.random() * 160 + 'px');
+    p.style.setProperty('--r', (Math.random() * 900 - 450) + 'deg');
+    p.style.animationDelay = Math.random() * 0.5 + 's';
+    box.appendChild(p);
+  }
+  el.appendChild(box);
+  setTimeout(() => box.remove(), 3500);
 }
 function floatText(parent, text, cls) {
   const d = document.createElement('span');
@@ -910,10 +1008,10 @@ function floatText(parent, text, cls) {
   setTimeout(() => d.remove(), 950);
 }
 function hitFlash(card) {
-  card.classList.remove('hit');
+  card.classList.remove('hit', 'slashed');
   void card.offsetWidth;
-  card.classList.add('hit');
-  setTimeout(() => card.classList.remove('hit'), 300);
+  card.classList.add('hit', 'slashed');
+  setTimeout(() => card.classList.remove('hit', 'slashed'), 360);
 }
 
 function startBattle(timeUp) {
@@ -961,7 +1059,12 @@ async function runBattle(timeUp) {
       for (const h of e.hits) {
         const att = h.from === 'y' ? a : b, def = h.from === 'y' ? b : a;
         if (h.blocked) floatText(def, 'WARD', 'fx');
-        else { hitFlash(def); floatText(def, '−' + h.dmg); }
+        else {
+          hitFlash(def);
+          floatText(def, '−' + h.dmg);
+          burst(def, h.from === 'y' ? 'var(--you)' : 'var(--foe)', 8 + Math.min(10, h.dmg), 30 + Math.min(30, h.dmg * 3));
+          if (h.dmg >= 7 && speed !== 0) { const fld = $('.field'); fld.classList.remove('shake'); void fld.offsetWidth; fld.classList.add('shake'); }
+        }
         if (h.heal) floatText(att, '+' + h.heal, 'good');
         if (h.thorns) floatText(att, '−' + h.thorns + ' thorns', 'fx');
         for (const sp of h.spill) {
@@ -977,8 +1080,8 @@ async function runBattle(timeUp) {
       await sleep(520);
       const msg = e.notes.slice();
       const fallen = [];
-      e.fell.y.forEach(k => { const el = Y(k); if (el) { el.classList.remove('front'); el.classList.add('dead'); } fallen.push(you[k].word); });
-      e.fell.f.forEach(k => { const el = F(k); if (el) { el.classList.remove('front'); el.classList.add('dead'); } fallen.push(foe[k].word); });
+      e.fell.y.forEach(k => { const el = Y(k); if (el) { el.classList.remove('front'); el.classList.add('dead'); burst(el, 'var(--muted)', 14, 52, true); } fallen.push(you[k].word); });
+      e.fell.f.forEach(k => { const el = F(k); if (el) { el.classList.remove('front'); el.classList.add('dead'); burst(el, 'var(--muted)', 14, 52, true); } fallen.push(foe[k].word); });
       if (fallen.length) msg.push(`${fallen.join(' and ')} ${fallen.length > 1 ? 'fall' : 'falls'}`);
       if (msg.length) { log(msg.join(' · ')); await sleep(600); }
     } else {
@@ -990,7 +1093,11 @@ async function runBattle(timeUp) {
       await sleep(300);
       S.hp[e.side] = e.hp;
       updateHud();
-      floatText($('.base.' + e.side), '−' + e.dmg);
+      const bs = $('.base.' + e.side);
+      floatText(bs, '−' + e.dmg);
+      bs.classList.remove('hurt'); void bs.offsetWidth; bs.classList.add('hurt');
+      burst(bs, e.side === 'you' ? 'var(--you)' : 'var(--foe)', 14, 44);
+      setTimeout(() => bs.classList.remove('hurt'), 450);
       card.classList.remove('strike');
       await sleep(560);
     }
@@ -1027,6 +1134,7 @@ function endRound(res) {
     html = `<div class="panel ${over === 'draw' ? 'draw' : over}"><h2>${title}</h2><p>${why}</p><p class="sub">Your longest word this game: <b>${S.best ? S.best : 'none'}</b>${S.best ? ` (${S.best.length} letters)` : ''}. ${hint}</p><div class="row2"><button class="btn go" data-a="start">Play again</button><button class="btn" data-a="menu">Menu</button></div></div>`;
   }
   $('#result').innerHTML = html;
+  if (cls === 'win' || over === 'win') confetti($('#result .panel'), over === 'win' ? 70 : 28);
   $('#result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1049,6 +1157,7 @@ const ACT = {
       t.ch = S.swapPool[S.swapIdx++ % S.swapPool.length];
       t.use = null;
     });
+    ids.forEach(id => S.fresh.add(id));
     S.draft = [];
     S.swapped = true;
     renderPool();
